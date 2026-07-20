@@ -18,3 +18,4 @@ petty-court/
 ```
 
 Feel free to add to or change the structure
+You can run tests by running `pytest` or `pytest -v` at the repo root.
