@@ -1,7 +1,5 @@
 import os
-
 from flask import Flask
-
 from app.db import db
 
 
