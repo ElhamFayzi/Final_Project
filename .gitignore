@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables / secrets (Gemini API key, etc.)
+.env
+.env.*
+
+# Flask instance folder (local SQLite db, local-only config)
+instance/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editors / OS
+.DS_Store
+.vscode/
