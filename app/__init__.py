@@ -1,5 +1,7 @@
 import os
 from flask import Flask
+from sqlalchemy import event
+
 from app.db import db
 
 
@@ -19,7 +21,17 @@ def create_app(test_config=None):
     db.init_app(app)
 
     with app.app_context():
-        from app import models  
+        from app import models
         db.create_all()
+
+        @event.listens_for(db.engine, "connect")
+        def _set_sqlite_pragmas(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA busy_timeout=5000")
+            cursor.close()
+
+    from app.routes.rooms import rooms_bp
+    app.register_blueprint(rooms_bp)
 
     return app

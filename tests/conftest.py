@@ -15,3 +15,7 @@ def db(app):
     with app.app_context():
         yield _db
         _db.session.remove()
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
