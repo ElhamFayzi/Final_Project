@@ -1,7 +1,8 @@
 from app.db import db
 from app.game_logic.rooms import create_room, join_room, start_game, RoomError
 from app.game_logic.state_view import build_state
-from app.game_logic.state_machine import LOBBY, CASE_REVEAL
+from app.game_logic.state_machine import LOBBY, CASE_REVEAL, SCOREBOARD
+from app.models import Case
 
 
 def test_build_state_lobby_shape(db):
@@ -56,6 +57,24 @@ def test_start_game_rejects_too_few_players(db):
         assert False, "expected RoomError"
     except RoomError:
         pass
+
+
+def test_litigation_rotation_is_fair_across_many_rounds_in_one_game(db):
+    game = create_room()
+    names = ["Alex", "Sam", "Jordan", "Casey"]
+    for name in names:
+        join_room(game.join_code, name)
+
+    counts = {name: 0 for name in names}
+    for _ in range(8):  # 8 rounds x 2 slots = 16 slots / 4 players -> 4 turns each if fair
+        game = start_game(game.join_code, game.host_token)
+        case = Case.query.filter_by(game_id=game.id, case_number=game.round_number).first()
+        counts[case.plaintiff_name] += 1
+        counts[case.defendant_name] += 1
+        game.state = SCOREBOARD
+        db.session.commit()
+
+    assert max(counts.values()) - min(counts.values()) <= 1
 
 
 def test_polling_endpoint_returns_full_state(client, db):
