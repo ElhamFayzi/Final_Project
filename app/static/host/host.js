@@ -116,10 +116,9 @@ function renderJuryVote(state) {
   document.querySelector("[data-vote-status]").textContent = `${votedCount} / ${jurorCount} jurors have voted…`;
 }
 
-function renderScoreboard(state) {
-  const rowsEl = document.querySelector("[data-score-rows]");
-  rowsEl.innerHTML = "";
-  (state.score_rows || []).forEach((row, index) => {
+function renderScoreRows(container, rows) {
+  container.innerHTML = "";
+  rows.forEach((row, index) => {
     const rowEl = document.createElement("div");
     rowEl.className = "score-row" + (index === 0 ? " score-row--leader" : "");
 
@@ -140,14 +139,19 @@ function renderScoreboard(state) {
     pts.textContent = `${row.pts} pts`;
 
     rowEl.append(rank, avatar, name, pts);
-    rowsEl.append(rowEl);
+    container.append(rowEl);
   });
+}
+
+function renderScoreboard(state) {
+  renderScoreRows(document.querySelector("[data-score-rows]"), state.score_rows || []);
 }
 
 function renderFinale(state) {
   renderAvatar(document.querySelector("[data-champ-avatar]"), state.champ_name);
   document.querySelector("[data-champ-name]").textContent = state.champ_name || "—";
   document.querySelector("[data-champ-pts]").textContent = state.champ_pts ?? 0;
+  renderScoreRows(document.querySelector("[data-final-score-rows]"), state.score_rows || []);
 }
 
 function render(state) {
