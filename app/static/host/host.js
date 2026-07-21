@@ -187,6 +187,10 @@ async function main() {
     .addEventListener("click", () => postHostAction(joinCode, "argue"));
 
   document
+    .querySelector('[data-phase="arguments"] [data-action="advance"]')
+    .addEventListener("click", () => postHostAction(joinCode, "verdict"));
+
+  document
     .querySelector('[data-phase="verdict"] [data-action="advance"]')
     .addEventListener("click", () => postHostAction(joinCode, "deliberate"));
 
