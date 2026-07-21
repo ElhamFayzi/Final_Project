@@ -56,6 +56,15 @@ async function submitArgumentRequest(code, token, text) {
   return res.json();
 }
 
+async function castVoteRequest(code, token, choice) {
+  const res = await fetch(`/api/rooms/${code}/vote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, choice }),
+  });
+  return res.json();
+}
+
 function showView(view) {
   document.querySelectorAll("[data-view]").forEach((section) => {
     section.hidden = section.dataset.view !== view;
@@ -73,6 +82,8 @@ function ordinal(n) {
 
 let currentState = null;
 let argumentSubmittedForRound = null;
+let voteChoiceForRound = null;
+let votedRound = null;
 
 function isLitigant(state, myName) {
   return state.plaintiff?.name === myName || state.defendant?.name === myName;
@@ -115,6 +126,14 @@ function renderJuryVote(state) {
   renderAvatar(document.querySelector("[data-defendant-avatar]"), state.defendant?.name);
   document.querySelector("[data-plaintiff-name]").textContent = state.plaintiff?.name || "—";
   document.querySelector("[data-defendant-name]").textContent = state.defendant?.name || "—";
+
+  const myChoice = votedRound === state.round ? voteChoiceForRound : null;
+  document
+    .querySelector('[data-action="vote-plaintiff"]')
+    .classList.toggle("vote-option--selected", myChoice === "plaintiff");
+  document
+    .querySelector('[data-action="vote-defendant"]')
+    .classList.toggle("vote-option--selected", myChoice === "defendant");
 }
 
 function renderScore(state, myName) {
@@ -197,6 +216,35 @@ function setupArgumentForm() {
   });
 }
 
+function setupVoteButtons() {
+  const errorEl = document.querySelector("[data-vote-error]");
+
+  const buttons = {
+    plaintiff: document.querySelector('[data-action="vote-plaintiff"]'),
+    defendant: document.querySelector('[data-action="vote-defendant"]'),
+  };
+
+  Object.entries(buttons).forEach(([choice, button]) => {
+    button.addEventListener("click", async () => {
+      errorEl.hidden = true;
+
+      const identity = getStoredIdentity();
+      if (!identity || !currentState) return;
+
+      const data = await castVoteRequest(identity.code, identity.token, choice);
+      if (!data.success) {
+        errorEl.textContent = data.error || "Could not cast your vote.";
+        errorEl.hidden = false;
+        return;
+      }
+
+      votedRound = currentState.round;
+      voteChoiceForRound = choice;
+      renderJuryVote(currentState);
+    });
+  });
+}
+
 function setupLeaveButton() {
   document.querySelector('[data-action="leave-room"]').addEventListener("click", async () => {
     const identity = getStoredIdentity();
@@ -210,6 +258,7 @@ function main() {
   setupJoinForm();
   setupLeaveButton();
   setupArgumentForm();
+  setupVoteButtons();
 
   const identity = getStoredIdentity();
   if (identity) startApp(identity.code, identity.name);

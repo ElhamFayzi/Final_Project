@@ -34,4 +34,10 @@ def create_app(test_config=None):
     from app.routes.rooms import rooms_bp
     app.register_blueprint(rooms_bp)
 
+    from flask import render_template
+
+    @app.route("/")
+    def index():
+        return render_template("index.html")
+
     return app
