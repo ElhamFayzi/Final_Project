@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petty Court — Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/shared/theme.css">
+<link rel="stylesheet" href="/static/player/player.css">
+</head>
+<body class="player-body">
+<div class="player-page">
+
+  <section class="view" data-view="join">
+    <div class="join-header">
+      <div class="join-header__title">PETTY COURT</div>
+      <div class="join-header__hint">Enter the room code from the big screen.</div>
+    </div>
+    <form data-join-form>
+      <label class="field">
+        <span class="field__label">Room Code</span>
+        <input type="text" name="code" placeholder="e.g. WIGZ" maxlength="8" autocomplete="off" required>
+      </label>
+      <label class="field">
+        <span class="field__label">Your Name</span>
+        <input type="text" name="name" placeholder="e.g. Petty LaBelle" maxlength="20" autocomplete="off" required>
+      </label>
+      <div class="field__error" data-join-error hidden></div>
+      <button type="submit" class="btn btn--primary btn--block">Take Your Seat</button>
+    </form>
+  </section>
+
+  <section class="view" data-view="connecting" hidden>
+    <div class="center-card">
+      <div class="center-card__icon">⚖️</div>
+      <div class="center-card__title">Connecting to the court…</div>
+    </div>
+  </section>
+
+  <section class="view" data-view="lobby" hidden>
+    <div class="center-card">
+      <div class="avatar avatar--big" data-my-avatar></div>
+      <div class="center-card__title">You're in, <span data-my-name>—</span>!</div>
+      <div class="center-card__hint">Eyes on the big screen. The bailiff will call you shortly.</div>
+    </div>
+  </section>
+
+  <section class="view" data-view="summoned" hidden>
+    <div class="center-card">
+      <div class="summons-badge">YOU'VE BEEN SUMMONED</div>
+      <div class="avatar avatar--big" data-my-avatar></div>
+      <div class="center-card__hint">Case #<span data-case-number>0</span></div>
+      <div class="summons-prompt" data-prompt>—</div>
+      <div class="role-badge" data-my-role>—</div>
+    </div>
+  </section>
+
+  <section class="view" data-view="jury-wait" hidden>
+    <div class="center-card">
+      <div class="center-card__icon">🔨</div>
+      <div class="center-card__title">You're on the jury</div>
+      <div class="center-card__hint">Sit tight — you'll vote once arguments close.</div>
+    </div>
+  </section>
+
+  <section class="view" data-view="write-argument" hidden>
+    <div class="write-header">
+      <div class="role-badge" data-my-role>—</div>
+    </div>
+    <div class="summons-prompt" data-prompt>—</div>
+    <textarea class="argument-box" data-argument-text placeholder="State your case…"></textarea>
+    <div class="field__error" data-argument-error hidden></div>
+    <button type="button" class="btn btn--danger btn--block" data-action="submit-argument">Submit to the Court</button>
+  </section>
+
+  <section class="view" data-view="all-rise" hidden>
+    <div class="center-card">
+      <div class="center-card__icon">⚖️</div>
+      <div class="center-card__title">ALL RISE.</div>
+      <div class="center-card__hint">Judge Hoots is ruling on the big screen.<br>Try to look innocent.</div>
+    </div>
+  </section>
+
+  <section class="view" data-view="jury-vote" hidden>
+    <div class="vote-header">
+      <div class="vote-header__title">WHO WON?</div>
+    </div>
+    <button type="button" class="vote-option" data-action="vote-plaintiff" disabled
+      title="Coming soon — needs a backend vote endpoint">
+      <div class="avatar" data-plaintiff-avatar></div>
+      <div class="vote-option__info">
+        <div class="vote-option__name" data-plaintiff-name>—</div>
+        <div class="vote-option__role">PLAINTIFF</div>
+      </div>
+    </button>
+    <button type="button" class="vote-option" data-action="vote-defendant" disabled
+      title="Coming soon — needs a backend vote endpoint">
+      <div class="avatar" data-defendant-avatar></div>
+      <div class="vote-option__info">
+        <div class="vote-option__name" data-defendant-name>—</div>
+        <div class="vote-option__role">DEFENDANT</div>
+      </div>
+    </button>
+  </section>
+
+  <section class="view" data-view="on-trial" hidden>
+    <div class="center-card">
+      <div class="avatar avatar--big" data-my-avatar></div>
+      <div class="center-card__title">The jury is deciding your fate…</div>
+      <div class="center-card__hint">No take-backs. You said what you said.</div>
+    </div>
+  </section>
+
+  <section class="view" data-view="score" hidden>
+    <div class="center-card">
+      <div class="avatar avatar--big" data-my-avatar></div>
+      <div class="score-rank" data-my-rank>—</div>
+      <div class="score-pts"><span data-my-pts>0</span> Petty Points</div>
+    </div>
+  </section>
+
+  <section class="view" data-view="adjourned" hidden>
+    <div class="center-card">
+      <div class="center-card__icon">🔨</div>
+      <div class="center-card__title">Court is adjourned.</div>
+      <div class="center-card__hint">Go apologize to each other.<br>Or don't. The court doesn't care.</div>
+    </div>
+  </section>
+
+  <button type="button" class="btn btn--ghost btn--leave" data-action="leave-room" hidden>Leave Room</button>
+</div>
+
+<script src="/static/shared/avatar.js"></script>
+<script src="/static/player/player.js"></script>
+</body>
+</html>
