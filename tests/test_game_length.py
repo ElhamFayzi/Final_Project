@@ -171,6 +171,22 @@ def test_end_game_now_rejects_when_already_ended(db):
         end_game_now(game.join_code, game.host_token)
 
 
+def test_next_case_does_not_repeat_a_prompt_while_others_remain(db):
+    game = create_room(target_turns=3)  # 2 players -> 3 rounds needed
+    join_room(game.join_code, "Alex")
+    join_room(game.join_code, "Sam")
+    game = start_game(game.join_code, game.host_token)
+
+    prompts_seen = set()
+    for _ in range(3):
+        case = Case.query.filter_by(game_id=game.id, case_number=game.round_number).first()
+        prompts_seen.add(case.prompt)
+        game = _complete_current_round(game)
+        game = advance_to_next_case(game.join_code, game.host_token)
+
+    assert len(prompts_seen) == 3  # 3 rounds, 3 distinct prompts, well within the 6-prompt bank
+
+
 def test_settings_next_case_and_end_routes_work_end_to_end(client, db):
     create_resp = client.post("/api/rooms", json={"target_turns": 1})
     body = create_resp.get_json()

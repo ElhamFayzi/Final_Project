@@ -1,7 +1,7 @@
 from app.db import db
 from app.game_logic.rooms import create_room, join_room, start_game, RoomError
 from app.game_logic.state_view import build_state
-from app.game_logic.state_machine import LOBBY, CASE_REVEAL, SCOREBOARD
+from app.game_logic.state_machine import LOBBY, CASE_REVEAL, FINALE, SCOREBOARD
 from app.models import Case
 
 
@@ -75,6 +75,31 @@ def test_litigation_rotation_is_fair_across_many_rounds_in_one_game(db):
         db.session.commit()
 
     assert max(counts.values()) - min(counts.values()) <= 1
+
+
+def test_finale_state_includes_full_standings_not_just_the_champion(db):
+    game = create_room()
+    join_room(game.join_code, "Alex")
+    join_room(game.join_code, "Sam")
+    join_room(game.join_code, "Jordan")
+    game = start_game(game.join_code, game.host_token)
+
+    players = {p.name: p for p in game.players}
+    players["Alex"].score = 500
+    players["Sam"].score = 300
+    players["Jordan"].score = 100
+    game.state = FINALE
+    db.session.commit()
+
+    state = build_state(game)
+
+    assert state["champ_name"] == "Alex"
+    assert state["champ_pts"] == 500
+    assert state["score_rows"] == [
+        {"name": "Alex", "pts": 500},
+        {"name": "Sam", "pts": 300},
+        {"name": "Jordan", "pts": 100},
+    ]
 
 
 def test_polling_endpoint_returns_full_state(client, db):
