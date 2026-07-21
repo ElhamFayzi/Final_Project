@@ -3,6 +3,7 @@ from app.game_logic.tokens import generate_join_code
 from app.game_logic.state_machine import (
     CASE_REVEAL,
     ARGUMENTS,
+    VERDICT,
     JURY_VOTE,
     SCOREBOARD,
     FINALE,
@@ -12,6 +13,8 @@ from app.game_logic.state_machine import (
 from app.game_logic.role_assignment import select_litigants, NotEnoughPlayers
 from app.game_logic.prompts import random_prompt
 from app.game_logic.scoring import calculate_score_deltas
+from app.game_logic.judge import judge_case, fallback_verdict, JudgeClientError
+from app.llm_client import make_client
 from app.models import Game, Player, Case, Vote
 
 MAX_PLAYERS = 200
@@ -151,12 +154,14 @@ def _begin_new_round(game, players):
     plaintiff = next(p for p in players if p.id == plaintiff_id)
     defendant = next(p for p in players if p.id == defendant_id)
 
+    used_prompts = {c.prompt for c in Case.query.filter_by(game_id=game.id).all()}
+
     game.round_number += 1
     game.state = CASE_REVEAL
     case = Case(
         game_id=game.id,
         case_number=game.round_number,
-        prompt=random_prompt(),
+        prompt=random_prompt(exclude=used_prompts),
         plaintiff_name=plaintiff.name,
         plaintiff_avatar=plaintiff.avatar,
         defendant_name=defendant.name,
@@ -243,6 +248,48 @@ def submit_argument(join_code, player_token, text):
 
     db.session.commit()
     return case
+
+
+def advance_to_verdict(join_code, host_token, client_factory=None):
+    client_factory = client_factory or make_client
+
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to advance this game.")
+    if not can_advance_to(game.state, VERDICT):
+        raise RoomError(f"Cannot reach a verdict from state '{game.state}'.")
+
+    case = _current_case(game)
+    if case is None:
+        raise RoomError("No case is currently in progress.")
+
+    try:
+        client = client_factory()
+    except JudgeClientError:
+        client = None
+
+    if client is None:
+        verdict = fallback_verdict()
+    else:
+        verdict = judge_case(
+            case.prompt,
+            case.plaintiff_name,
+            case.plaintiff_argument,
+            case.defendant_name,
+            case.defendant_argument,
+            client,
+        )
+
+    case.ruling = verdict.ruling
+    case.reasoning = verdict.reasoning
+    case.winner = verdict.winner
+    case.damages = verdict.damages
+
+    game.state = VERDICT
+    db.session.commit()
+    return game
 
 
 def advance_to_jury_vote(join_code, host_token):
