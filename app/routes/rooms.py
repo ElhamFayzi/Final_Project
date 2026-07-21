@@ -6,6 +6,7 @@ from app.game_logic.rooms import (
     advance_to_jury_vote,
     advance_to_next_case,
     advance_to_scoreboard,
+    advance_to_verdict,
     cast_vote,
     create_room,
     end_game_now,
@@ -103,6 +104,17 @@ def argument(code):
         return _error(str(exc))
 
     return jsonify({"success": True})
+
+
+@rooms_bp.route("/<code>/verdict", methods=["POST"])
+def verdict(code):
+    payload = request.get_json(silent=True) or {}
+    try:
+        game = advance_to_verdict(code, payload.get("host_token", ""))
+    except RoomError as exc:
+        return _error(str(exc))
+
+    return jsonify({"success": True, **build_state(game)})
 
 
 @rooms_bp.route("/<code>/deliberate", methods=["POST"])
