@@ -18,3 +18,7 @@ def test_random_prompt_falls_back_to_the_full_bank_once_exhausted():
     result = random_prompt(exclude=exclude)
 
     assert result in STARTER_PROMPTS
+
+
+def test_starter_prompts_has_no_duplicates():
+    assert len(STARTER_PROMPTS) == len(set(STARTER_PROMPTS))
