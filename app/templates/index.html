@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petty Court</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/shared/theme.css">
+<style>
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(1200px 700px at 50% -10%, var(--pc-navy), var(--pc-navy-dark));
+  }
+  .landing {
+    text-align: center;
+    padding: 40px;
+  }
+  .landing h1 {
+    font-family: var(--pc-font-display);
+    font-size: 56px;
+    color: var(--pc-gold);
+    margin: 0 0 12px;
+  }
+  .landing p {
+    color: var(--pc-muted-dark);
+    font-size: 16px;
+    margin: 0 0 32px;
+  }
+  .landing-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .landing-links a {
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+  <div class="landing">
+    <h1>PETTY COURT</h1>
+    <p>Where petty grievances get real verdicts.</p>
+    <div class="landing-links">
+      <a class="btn btn--primary" href="/static/host/host.html">I'm the Big Screen</a>
+      <a class="btn btn--dark" href="/static/player/player.html">I'm a Player</a>
+    </div>
+  </div>
+</body>
+</html>
