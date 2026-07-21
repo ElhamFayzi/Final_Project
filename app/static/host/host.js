@@ -181,7 +181,7 @@ async function main() {
     joinCode = await createRoom();
   }
 
-  document.querySelector('[data-action="new-session"]').addEventListener("click", newSession);
+  document.querySelectorAll('[data-action="new-session"]').forEach((btn) => btn.addEventListener("click", newSession));
   document
     .querySelector('[data-action="start-court"]')
     .addEventListener("click", () => postHostAction(joinCode, "start"));
