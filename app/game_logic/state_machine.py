@@ -17,8 +17,7 @@ class InvalidTransition(Exception):
 
 def next_state(current_state, *, is_last_round=False):
     """Return the phase that follows current_state.
-    is_last_round only matters when leaving SCOREBOARD: the game either
-    loops back for another round (CASE_REVEAL) or ends (FINALE).
+    is_last_round only matters when leaving SCOREBOARD: the game either loops back for another round (CASE_REVEAL) or ends (FINALE).
     """
     if current_state == SCOREBOARD:
         return FINALE if is_last_round else CASE_REVEAL
