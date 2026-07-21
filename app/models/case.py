@@ -17,6 +17,7 @@ class Case(db.Model):
 
     plaintiff_argument = db.Column(db.Text, nullable=True)
     defendant_argument = db.Column(db.Text, nullable=True)
+    arguments_opened_at = db.Column(db.DateTime, nullable=True)
 
     ruling = db.Column(db.Text, nullable=True)
     reasoning = db.Column(db.Text, nullable=True)

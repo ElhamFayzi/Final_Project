@@ -29,6 +29,15 @@ def test_advance_to_arguments_moves_phase_forward(db):
     assert updated.state == ARGUMENTS
 
 
+def test_advance_to_arguments_stamps_the_case_start_time(db):
+    game = _room_ready_for_arguments(db)
+
+    advance_to_arguments(game.join_code, game.host_token)
+
+    case = Case.query.filter_by(game_id=game.id, case_number=game.round_number).first()
+    assert case.arguments_opened_at is not None
+
+
 def test_advance_to_arguments_rejects_wrong_host_token(db):
     game = _room_ready_for_arguments(db)
 

@@ -84,6 +84,8 @@ let currentState = null;
 let argumentSubmittedForRound = null;
 let voteChoiceForRound = null;
 let votedRound = null;
+let writeDeadlineIso = null;
+let writeTimerHandle = null;
 
 function isLitigant(state, myName) {
   return state.plaintiff?.name === myName || state.defendant?.name === myName;
@@ -108,6 +110,35 @@ function renderSummoned(state, myName) {
   document.querySelectorAll("[data-my-role]").forEach((el) => (el.textContent = `YOU ARE THE ${role}`));
 }
 
+function stopWriteTimer() {
+  if (writeTimerHandle) {
+    clearInterval(writeTimerHandle);
+    writeTimerHandle = null;
+  }
+  writeDeadlineIso = null;
+  const el = document.querySelector("[data-write-timer]");
+  if (el) el.hidden = true;
+}
+
+function startWriteTimer(deadlineIso) {
+  writeDeadlineIso = deadlineIso;
+  const deadlineMs = new Date(deadlineIso).getTime();
+  const el = document.querySelector("[data-write-timer]");
+  if (el) el.hidden = false;
+
+  function tick() {
+    const remaining = Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000));
+    if (el) {
+      el.textContent = `${remaining}s`;
+      el.classList.toggle("write-timer--urgent", remaining <= 10);
+    }
+    if (remaining <= 0) stopWriteTimer();
+  }
+
+  tick();
+  writeTimerHandle = setInterval(tick, 250);
+}
+
 function renderWriteArgument(state, myName) {
   document.querySelector("[data-prompt]").textContent = state.prompt || "—";
   const role = state.plaintiff?.name === myName ? "PLAINTIFF" : "DEFENDANT";
@@ -119,6 +150,13 @@ function renderWriteArgument(state, myName) {
   textarea.readOnly = alreadySubmitted;
   button.disabled = alreadySubmitted;
   button.textContent = alreadySubmitted ? "Filed with the court ✓" : "Submit to the Court";
+
+  if (state.arguments_deadline && state.arguments_deadline !== writeDeadlineIso) {
+    stopWriteTimer();
+    startWriteTimer(state.arguments_deadline);
+  } else if (!state.arguments_deadline) {
+    stopWriteTimer();
+  }
 }
 
 function renderJuryVote(state) {
@@ -153,6 +191,7 @@ function render(state, myName) {
 
   if (view === "summoned") renderSummoned(state, myName);
   if (view === "write-argument") renderWriteArgument(state, myName);
+  else stopWriteTimer();
   if (view === "jury-vote") renderJuryVote(state);
   if (view === "score") renderScore(state, myName);
 }

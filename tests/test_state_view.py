@@ -1,5 +1,16 @@
+from datetime import datetime
+
 from app.db import db
-from app.game_logic.rooms import create_room, join_room, start_game, RoomError
+from app.game_logic.rooms import (
+    ARGUMENT_TIME_LIMIT_SECONDS,
+    advance_to_arguments,
+    advance_to_verdict,
+    create_room,
+    join_room,
+    start_game,
+    submit_argument,
+    RoomError,
+)
 from app.game_logic.state_view import build_state
 from app.game_logic.state_machine import LOBBY, CASE_REVEAL, FINALE, SCOREBOARD
 from app.models import Case
@@ -118,6 +129,54 @@ def test_score_rows_flag_players_who_left_mid_game(db):
     rows_by_name = {row["name"]: row for row in state["score_rows"]}
     assert rows_by_name["Alex"]["connected"] is True
     assert rows_by_name["Sam"]["connected"] is False
+
+
+def test_arguments_state_includes_deadline_and_submission_flags(db):
+    game = create_room()
+    join_room(game.join_code, "Alex")
+    join_room(game.join_code, "Sam")
+    game = start_game(game.join_code, game.host_token)
+    game = advance_to_arguments(game.join_code, game.host_token)
+
+    case = Case.query.filter_by(game_id=game.id, case_number=game.round_number).first()
+    submit_argument(game.join_code, next(p.token for p in game.players if p.name == case.plaintiff_name), "Obviously.")
+
+    state = build_state(game)
+
+    assert "arguments_deadline" in state
+    deadline = state["arguments_deadline"]
+    assert deadline.endswith("Z")
+
+    actual_seconds = (datetime.fromisoformat(deadline[:-1]) - case.arguments_opened_at).total_seconds()
+    assert actual_seconds == ARGUMENT_TIME_LIMIT_SECONDS
+
+    assert state["plaintiff"]["submitted"] is True
+    assert state["defendant"]["submitted"] is False
+
+
+def test_verdict_state_includes_each_litigants_argument_text(db):
+    game = create_room()
+    join_room(game.join_code, "Alex")
+    join_room(game.join_code, "Sam")
+    game = start_game(game.join_code, game.host_token)
+    game = advance_to_arguments(game.join_code, game.host_token)
+
+    case = Case.query.filter_by(game_id=game.id, case_number=game.round_number).first()
+    submit_argument(game.join_code, next(p.token for p in game.players if p.name == case.plaintiff_name), "It's a sandwich.")
+    submit_argument(game.join_code, next(p.token for p in game.players if p.name == case.defendant_name), "It is not.")
+
+    good_verdict = (
+        '{"ruling": "Sandwich.", "reasoning": "Bread and filling.", '
+        '"winner": "plaintiff", "damages": 300}'
+    )
+    game = advance_to_verdict(
+        game.join_code, game.host_token, client_factory=lambda: (lambda system_text, user_text: good_verdict)
+    )
+
+    state = build_state(game)
+
+    assert state["plaintiff"]["argument"] == "It's a sandwich."
+    assert state["defendant"]["argument"] == "It is not."
 
 
 def test_polling_endpoint_returns_full_state(client, db):

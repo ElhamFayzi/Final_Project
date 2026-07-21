@@ -168,7 +168,22 @@
 
 .write-header {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 10px;
+  position: relative;
+}
+
+.write-timer {
+  position: absolute;
+  right: 0;
+  font-family: var(--pc-font-display);
+  font-size: 15px;
+  color: var(--pc-navy);
+}
+
+.write-timer--urgent {
+  color: var(--pc-red);
 }
 
 .argument-box {

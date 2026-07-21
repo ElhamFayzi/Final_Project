@@ -2,6 +2,10 @@ const POLL_INTERVAL_MS = 1500;
 const STORAGE_CODE_KEY = "pc_host_join_code";
 const STORAGE_TOKEN_KEY = "pc_host_token";
 
+let hostJoinCode = null;
+let argumentsDeadlineIso = null;
+let argumentsTimerHandle = null;
+
 async function createRoom() {
   const res = await fetch("/api/rooms", { method: "POST" });
   const data = await res.json();
@@ -45,7 +49,7 @@ function renderLobby(state) {
     seat.className = "lobby-seat";
 
     const avatar = document.createElement("div");
-    avatar.className = "avatar";
+    avatar.className = "avatar avatar--big";
     renderAvatar(avatar, player.name);
 
     const name = document.createElement("div");
@@ -90,6 +94,73 @@ function renderLitigants(state) {
   });
 }
 
+function stopArgumentsTimer() {
+  if (argumentsTimerHandle) {
+    clearInterval(argumentsTimerHandle);
+    argumentsTimerHandle = null;
+  }
+  argumentsDeadlineIso = null;
+  const wrap = document.querySelector("[data-arguments-timer-wrap]");
+  if (wrap) wrap.hidden = true;
+}
+
+function startArgumentsTimer(deadlineIso) {
+  argumentsDeadlineIso = deadlineIso;
+  const deadlineMs = new Date(deadlineIso).getTime();
+  const wrap = document.querySelector("[data-arguments-timer-wrap]");
+  const valueEl = document.querySelector("[data-arguments-timer]");
+  let autoAdvanceFired = false;
+
+  if (wrap) wrap.hidden = false;
+
+  function tick() {
+    const remaining = Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000));
+    if (valueEl) valueEl.textContent = remaining;
+    if (wrap) wrap.classList.toggle("timer-ring--urgent", remaining <= 10);
+
+    if (remaining <= 0 && !autoAdvanceFired) {
+      autoAdvanceFired = true;
+      stopArgumentsTimer();
+      if (hostJoinCode) postHostAction(hostJoinCode, "verdict");
+    }
+  }
+
+  tick();
+  argumentsTimerHandle = setInterval(tick, 250);
+}
+
+function updateWriterStatus(role, litigant) {
+  const el = document.querySelector(`[data-${role}-status]`);
+  if (!el || !litigant) return;
+  const submitted = !!litigant.submitted;
+  el.classList.toggle("writer__status--submitted", submitted);
+  el.innerHTML = submitted
+    ? "Filed with the court ✓"
+    : 'Scribbling furiously<span class="writer__dots"><span></span><span></span><span></span></span>';
+}
+
+function renderWriters(state) {
+  renderAvatar(document.querySelector('[data-phase="arguments"] [data-plaintiff-avatar]'), state.plaintiff?.name, "worried");
+  renderAvatar(document.querySelector('[data-phase="arguments"] [data-defendant-avatar]'), state.defendant?.name, "worried");
+  updateWriterStatus("plaintiff", state.plaintiff);
+  updateWriterStatus("defendant", state.defendant);
+
+  if (state.arguments_deadline && state.arguments_deadline !== argumentsDeadlineIso) {
+    stopArgumentsTimer();
+    startArgumentsTimer(state.arguments_deadline);
+  } else if (!state.arguments_deadline) {
+    stopArgumentsTimer();
+  }
+}
+
+function renderSpeechBubble(role, litigant) {
+  const el = document.querySelector(`[data-${role}-bubble]`);
+  if (!el || !litigant) return;
+  const text = (litigant.argument || "").trim();
+  el.classList.toggle("speech-bubble--empty", !text);
+  el.textContent = text ? `“${text}”` : "No argument was submitted.";
+}
+
 function renderVerdict(state) {
   document.querySelector("[data-ruling]").textContent = state.ruling || "—";
   document.querySelector("[data-reasoning]").textContent = state.reasoning || "—";
@@ -101,6 +172,9 @@ function renderVerdict(state) {
   const winnerName = plaintiffWins ? state.plaintiff?.name : state.defendant?.name;
   document.querySelector("[data-damages-stamp]").textContent =
     `${(winnerName || "").toUpperCase()} AWARDED ${state.damages ?? 0} PETTY POINTS`;
+
+  renderSpeechBubble("plaintiff", state.plaintiff);
+  renderSpeechBubble("defendant", state.defendant);
 }
 
 function renderJuryVote(state) {
@@ -157,11 +231,34 @@ function renderScoreboard(state) {
   renderScoreRows(document.querySelector("[data-score-rows]"), state.score_rows || []);
 }
 
+const CONFETTI_COLORS = ["#F0745B", "#3FB8AF", "#9B6BD3", "#7BB661", "#F0B429", "#E0699B"];
+let confettiSpawned = false;
+
+function spawnConfetti(container, count = 70) {
+  if (!container) return;
+  container.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti__piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+    piece.style.transform = `rotate(${Math.round(Math.random() * 360)}deg)`;
+    piece.style.animationDuration = `${3 + Math.random() * 3}s`;
+    piece.style.animationDelay = `${Math.random() * -6}s`;
+    container.appendChild(piece);
+  }
+}
+
 function renderFinale(state) {
   renderAvatar(document.querySelector("[data-champ-avatar]"), state.champ_name);
   document.querySelector("[data-champ-name]").textContent = state.champ_name || "—";
   document.querySelector("[data-champ-pts]").textContent = state.champ_pts ?? 0;
   renderScoreRows(document.querySelector("[data-final-score-rows]"), state.score_rows || []);
+
+  if (!confettiSpawned) {
+    confettiSpawned = true;
+    spawnConfetti(document.querySelector("[data-confetti]"));
+  }
 }
 
 function render(state) {
@@ -173,6 +270,8 @@ function render(state) {
 
   if (state.phase === "lobby") renderLobby(state);
   if (["case_reveal", "arguments", "verdict", "jury_vote"].includes(state.phase)) renderLitigants(state);
+  if (state.phase === "arguments") renderWriters(state);
+  else stopArgumentsTimer();
   if (state.phase === "verdict") renderVerdict(state);
   if (state.phase === "jury_vote") renderJuryVote(state);
   if (state.phase === "scoreboard") renderScoreboard(state);
@@ -190,6 +289,10 @@ async function main() {
   if (!joinCode) {
     joinCode = await createRoom();
   }
+  hostJoinCode = joinCode;
+
+  const joinUrlEl = document.querySelector("[data-join-url]");
+  if (joinUrlEl) joinUrlEl.textContent = window.location.host;
 
   document.querySelectorAll('[data-action="new-session"]').forEach((btn) => btn.addEventListener("click", newSession));
   document

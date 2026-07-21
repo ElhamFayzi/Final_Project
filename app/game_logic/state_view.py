@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from app.models import Case
 from app.game_logic.state_machine import (
     CASE_REVEAL,
@@ -7,6 +9,7 @@ from app.game_logic.state_machine import (
     SCOREBOARD,
     FINALE,
 )
+from app.game_logic.rooms import ARGUMENT_TIME_LIMIT_SECONDS
 
 
 def _player_public(player):
@@ -58,6 +61,15 @@ def build_state(game):
             state["plaintiff"] = {"name": case.plaintiff_name, "avatar": case.plaintiff_avatar}
             state["defendant"] = {"name": case.defendant_name, "avatar": case.defendant_avatar}
 
+    if game.state == ARGUMENTS:
+        case = _current_case(game)
+        if case:
+            state["plaintiff"]["submitted"] = bool(case.plaintiff_argument)
+            state["defendant"]["submitted"] = bool(case.defendant_argument)
+            if case.arguments_opened_at:
+                deadline = case.arguments_opened_at + timedelta(seconds=ARGUMENT_TIME_LIMIT_SECONDS)
+                state["arguments_deadline"] = deadline.isoformat() + "Z"
+
     if game.state == VERDICT:
         case = _current_case(game)
         if case:
@@ -65,6 +77,8 @@ def build_state(game):
             state["reasoning"] = case.reasoning
             state["winner"] = case.winner
             state["damages"] = case.damages
+            state["plaintiff"]["argument"] = case.plaintiff_argument
+            state["defendant"]["argument"] = case.defendant_argument
 
     if game.state == JURY_VOTE:
         case = _current_case(game)
