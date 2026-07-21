@@ -99,8 +99,13 @@ body {
   gap: 26px;
 }
 
-.lobby-intro__judge {
-  font-size: 60px;
+.lobby-intro__mascot {
+  height: 110px;
+  width: auto;
+}
+
+.lobby-intro__text {
+  text-align: left;
 }
 
 .lobby-intro__logo {
@@ -108,21 +113,60 @@ body {
   font-size: 48px;
   line-height: 0.95;
   color: var(--pc-gold);
-  text-align: left;
 }
 
-.lobby-intro__hint {
-  font-size: 14px;
+.lobby-intro__tagline {
+  font-size: 15px;
   font-weight: 700;
   color: var(--pc-cream);
-  max-width: 440px;
-  text-align: left;
+  margin-top: 6px;
+}
+
+.join-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--pc-paper);
+  border-radius: 16px;
+  padding: 14px 28px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+}
+
+.join-card__part {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.join-card__label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--pc-muted-dark);
+}
+
+.join-card__value {
+  font-family: var(--pc-font-display);
+  font-size: 20px;
+  color: var(--pc-navy);
+}
+
+.join-card__value--code {
+  letter-spacing: 5px;
+}
+
+.join-card__divider {
+  width: 2px;
+  align-self: stretch;
+  background: var(--pc-border);
+  opacity: 0.4;
 }
 
 .lobby-seats {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 20px;
   justify-content: center;
   max-width: 820px;
   max-height: 160px;
@@ -133,12 +177,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: 66px;
+  gap: 6px;
+  width: 80px;
 }
 
 .lobby-seat__name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
   overflow: hidden;
@@ -302,6 +346,87 @@ body {
   font-size: 24px;
 }
 
+.timer-ring {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: var(--pc-gold);
+  box-shadow: 0 8px 0 var(--pc-gold-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timer-ring--urgent {
+  background: var(--pc-red);
+  box-shadow: 0 8px 0 var(--pc-red-dark);
+}
+
+.timer-ring__value {
+  font-family: var(--pc-font-display);
+  font-size: 44px;
+  color: #3a2a0a;
+  line-height: 1;
+}
+
+.timer-ring--urgent .timer-ring__value {
+  color: var(--pc-paper);
+}
+
+.timer-ring__label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #6b4d10;
+  margin-top: 2px;
+}
+
+.timer-ring--urgent .timer-ring__label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.writer__status {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--pc-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.writer__status--submitted {
+  color: var(--pc-green);
+}
+
+.writer__dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.writer__dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.3;
+  animation: writer-dot-pulse 1.2s infinite ease-in-out;
+}
+
+.writer__dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.writer__dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes writer-dot-pulse {
+  0%, 80%, 100% { opacity: 0.3; }
+  40% { opacity: 1; }
+}
+
 /* Verdict */
 .verdict-layout {
   height: 100%;
@@ -318,12 +443,46 @@ body {
   padding: 20px;
 }
 
-.courtroom__judge {
+.courtroom__bench {
   position: absolute;
-  top: 24px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.courtroom__emblem {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid var(--pc-gold);
+  outline: 2px solid var(--pc-gold);
+  outline-offset: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pc-font-display);
+  font-size: 18px;
+  color: var(--pc-gold);
+}
+
+.courtroom__mascot {
+  height: 84px;
+  width: auto;
+}
+
+.courtroom__judge-label {
+  background: var(--pc-gold);
+  color: #3a2a0a;
+  font-family: var(--pc-font-display);
+  font-size: 11px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--pc-gold-dark);
+  white-space: nowrap;
 }
 
 .courtroom__side {
@@ -342,6 +501,37 @@ body {
   padding: 4px 12px;
   border-radius: 999px;
   box-shadow: 0 4px 0 var(--pc-gold-dark);
+}
+
+.speech-bubble {
+  position: relative;
+  background: var(--pc-paper);
+  color: var(--pc-navy);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 10px 14px;
+  border-radius: 14px;
+  max-width: 190px;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px 8px 0;
+  border-style: solid;
+  border-color: var(--pc-paper) transparent transparent transparent;
+}
+
+.speech-bubble--empty {
+  font-style: italic;
+  font-weight: 700;
+  color: var(--pc-muted-dark);
 }
 
 .verdict-paper {
@@ -516,7 +706,34 @@ body {
   font-size: 18px;
 }
 
-/* Finale */
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti__piece {
+  position: absolute;
+  top: -10%;
+  width: 9px;
+  height: 15px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    top: -10%;
+  }
+  100% {
+    top: 110%;
+  }
+}
+
 .finale-title {
   font-family: var(--pc-font-display);
   font-size: 44px;

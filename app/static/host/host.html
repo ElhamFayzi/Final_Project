@@ -33,11 +33,22 @@
     <section class="phase" data-phase="lobby">
       <div class="phase__inner">
         <div class="lobby-intro">
-          <div class="lobby-intro__judge" aria-hidden="true">⚖️</div>
-          <div>
+          <img class="lobby-intro__mascot" data-mascot src="/static/shared/img/mascot-judge.png" alt=""
+            aria-hidden="true" onerror="this.remove()">
+          <div class="lobby-intro__text">
             <div class="lobby-intro__logo">PETTY<br>COURT</div>
-            <p class="lobby-intro__hint">Have everyone open the Player screen on their own device and enter code
-              <strong data-join-code>----</strong>.</p>
+            <p class="lobby-intro__tagline">Court is now in session.</p>
+          </div>
+        </div>
+        <div class="join-card">
+          <div class="join-card__part">
+            <span class="join-card__label">Join at</span>
+            <span class="join-card__value" data-join-url>—</span>
+          </div>
+          <div class="join-card__divider"></div>
+          <div class="join-card__part">
+            <span class="join-card__label">Code</span>
+            <span class="join-card__value join-card__value--code" data-join-code>----</span>
           </div>
         </div>
         <div class="lobby-seats" data-lobby-seats></div>
@@ -49,7 +60,7 @@
         </div>
         <div class="lobby-start">
           <div class="lobby-start__count"><span data-player-count>0</span> joined</div>
-          <button class="btn btn--primary" data-action="start-court" disabled>Start Court</button>
+          <button class="btn btn--primary" data-action="start-court" disabled>🔨 Start Court</button>
           <div class="lobby-start__hint" data-need-more hidden>Need at least 2 players to start.</div>
         </div>
       </div>
@@ -83,17 +94,22 @@
       <div class="phase__inner">
         <div class="eyebrow">OPENING STATEMENTS</div>
         <div class="prompt-reminder" data-prompt>&mdash;</div>
-        <p class="muted-note">Both sides are writing their arguments on their own devices.</p>
+        <div class="timer-ring" data-arguments-timer-wrap hidden>
+          <div class="timer-ring__value" data-arguments-timer>45</div>
+          <div class="timer-ring__label">SECONDS</div>
+        </div>
         <div class="writers">
           <div class="writer">
             <div class="avatar" data-plaintiff-avatar></div>
             <div class="litigant__name" data-plaintiff-name>&mdash;</div>
             <div class="litigant__badge litigant__badge--plaintiff">PLAINTIFF</div>
+            <div class="writer__status" data-plaintiff-status></div>
           </div>
           <div class="writer">
             <div class="avatar" data-defendant-avatar></div>
             <div class="litigant__name" data-defendant-name>&mdash;</div>
             <div class="litigant__badge litigant__badge--defendant">DEFENDANT</div>
+            <div class="writer__status" data-defendant-status></div>
           </div>
         </div>
         <button class="btn btn--primary" data-action="advance">Approach the Bench →</button>
@@ -103,18 +119,25 @@
     <section class="phase" data-phase="verdict" hidden>
       <div class="verdict-layout">
         <div class="courtroom">
-          <div class="courtroom__judge" aria-hidden="true">⚖️</div>
+          <div class="courtroom__bench">
+            <div class="courtroom__emblem">PC</div>
+            <img class="courtroom__mascot" data-mascot src="/static/shared/img/mascot-judge.png" alt=""
+              aria-hidden="true" onerror="this.remove()">
+            <div class="courtroom__judge-label">HON. JUDGE HOOTS</div>
+          </div>
           <div class="courtroom__side">
             <div class="courtroom__ribbon" data-plaintiff-ribbon hidden>🏆 WINNER</div>
+            <div class="speech-bubble" data-plaintiff-bubble>&mdash;</div>
             <div class="avatar" data-plaintiff-avatar></div>
-            <div class="litigant__name" data-plaintiff-name>&mdash;</div>
             <div class="litigant__badge litigant__badge--plaintiff">PLAINTIFF</div>
+            <div class="litigant__name" data-plaintiff-name>&mdash;</div>
           </div>
           <div class="courtroom__side">
             <div class="courtroom__ribbon" data-defendant-ribbon hidden>🏆 WINNER</div>
+            <div class="speech-bubble" data-defendant-bubble>&mdash;</div>
             <div class="avatar" data-defendant-avatar></div>
-            <div class="litigant__name" data-defendant-name>&mdash;</div>
             <div class="litigant__badge litigant__badge--defendant">DEFENDANT</div>
+            <div class="litigant__name" data-defendant-name>&mdash;</div>
           </div>
         </div>
         <div class="verdict-paper">
@@ -129,7 +152,7 @@
           </div>
           <div class="verdict-stamp" data-damages-stamp>&mdash;</div>
           <div class="verdict-paper__footer">
-            <span class="verdict-paper__signed">So ordered.</span>
+            <span class="verdict-paper__signed">So ordered — Hon. Judge Hoots.</span>
             <button class="btn btn--dark" data-action="advance">Let the Jury Weigh In →</button>
           </div>
         </div>
@@ -176,6 +199,7 @@
     </section>
 
     <section class="phase" data-phase="finale" hidden>
+      <div class="confetti" data-confetti aria-hidden="true"></div>
       <div class="phase__inner">
         <div class="finale-title">COURT IS ADJOURNED</div>
         <div class="finale-champ">

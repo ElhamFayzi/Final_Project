@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.db import db
 from app.game_logic.tokens import generate_join_code
 from app.game_logic.state_machine import (
@@ -27,6 +29,7 @@ VALID_VOTE_CHOICES = ("plaintiff", "defendant")
 DEFAULT_TARGET_TURNS = 2
 MIN_TARGET_TURNS = 1
 MAX_TARGET_TURNS = 20
+ARGUMENT_TIME_LIMIT_SECONDS = 45
 
 
 class RoomError(ValueError):
@@ -214,6 +217,10 @@ def advance_to_arguments(join_code, host_token):
         raise RoomError("Not authorized to advance this game.")
     if not can_advance_to(game.state, ARGUMENTS):
         raise RoomError(f"Cannot hear arguments from state '{game.state}'.")
+
+    case = _current_case(game)
+    if case is not None:
+        case.arguments_opened_at = datetime.utcnow()
 
     game.state = ARGUMENTS
     db.session.commit()
