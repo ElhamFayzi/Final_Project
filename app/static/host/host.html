@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petty Court — Host</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/shared/theme.css">
+<link rel="stylesheet" href="/static/host/host.css">
+</head>
+<body>
+<div class="tv-frame">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__title">PETTY COURT</span>
+      <span class="brand__subtitle">HOST SCREEN — put this on the TV</span>
+    </div>
+    <div class="topbar__right">
+      <div class="join-code-badge">
+        <span class="join-code-badge__label">ROOM CODE</span>
+        <span class="join-code-badge__value" data-join-code>----</span>
+      </div>
+      <button class="btn btn--ghost" data-action="new-session">New Session</button>
+    </div>
+  </header>
+
+  <main class="screen">
+
+    <section class="phase" data-phase="lobby">
+      <div class="phase__inner">
+        <div class="lobby-intro">
+          <div class="lobby-intro__judge" aria-hidden="true">⚖️</div>
+          <div>
+            <div class="lobby-intro__logo">PETTY<br>COURT</div>
+            <p class="lobby-intro__hint">Have everyone open the Player screen on their own device and enter code
+              <strong data-join-code>----</strong>.</p>
+          </div>
+        </div>
+        <div class="lobby-seats" data-lobby-seats></div>
+        <div class="lobby-start">
+          <div class="lobby-start__count"><span data-player-count>0</span> joined</div>
+          <button class="btn btn--primary" data-action="start-court" disabled>Start Court</button>
+          <div class="lobby-start__hint" data-need-more hidden>Need at least 2 players to start.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phase" data-phase="case_reveal" hidden>
+      <div class="phase__inner">
+        <div class="eyebrow">ALL RISE — THE COURT WILL NOW HEAR</div>
+        <div class="case-card">
+          <div class="case-card__number">CASE #<span data-case-number>0</span></div>
+          <div class="case-card__prompt" data-prompt>&mdash;</div>
+        </div>
+        <div class="litigants">
+          <div class="litigant">
+            <div class="avatar" data-plaintiff-avatar></div>
+            <div class="litigant__name" data-plaintiff-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--plaintiff">PLAINTIFF</div>
+          </div>
+          <div class="litigants__vs">VS</div>
+          <div class="litigant">
+            <div class="avatar" data-defendant-avatar></div>
+            <div class="litigant__name" data-defendant-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--defendant">DEFENDANT</div>
+          </div>
+        </div>
+        <button class="btn btn--primary" data-action="advance">Hear Arguments →</button>
+      </div>
+    </section>
+
+    <section class="phase" data-phase="arguments" hidden>
+      <div class="phase__inner">
+        <div class="eyebrow">OPENING STATEMENTS</div>
+        <div class="prompt-reminder" data-prompt>&mdash;</div>
+        <p class="muted-note">Both sides are writing their arguments on their own devices.</p>
+        <div class="writers">
+          <div class="writer">
+            <div class="avatar" data-plaintiff-avatar></div>
+            <div class="litigant__name" data-plaintiff-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--plaintiff">PLAINTIFF</div>
+          </div>
+          <div class="writer">
+            <div class="avatar" data-defendant-avatar></div>
+            <div class="litigant__name" data-defendant-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--defendant">DEFENDANT</div>
+          </div>
+        </div>
+        <button class="btn btn--primary" data-action="advance" disabled
+          title="Coming soon — needs a backend transition endpoint">Approach the Bench →</button>
+      </div>
+    </section>
+
+    <section class="phase" data-phase="verdict" hidden>
+      <div class="verdict-layout">
+        <div class="courtroom">
+          <div class="courtroom__judge" aria-hidden="true">⚖️</div>
+          <div class="courtroom__side">
+            <div class="courtroom__ribbon" data-plaintiff-ribbon hidden>🏆 WINNER</div>
+            <div class="avatar" data-plaintiff-avatar></div>
+            <div class="litigant__name" data-plaintiff-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--plaintiff">PLAINTIFF</div>
+          </div>
+          <div class="courtroom__side">
+            <div class="courtroom__ribbon" data-defendant-ribbon hidden>🏆 WINNER</div>
+            <div class="avatar" data-defendant-avatar></div>
+            <div class="litigant__name" data-defendant-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--defendant">DEFENDANT</div>
+          </div>
+        </div>
+        <div class="verdict-paper">
+          <div class="verdict-paper__title">★ THE VERDICT ★</div>
+          <div class="verdict-paper__section">
+            <div class="verdict-paper__label">THE RULING</div>
+            <div class="verdict-paper__ruling" data-ruling>&mdash;</div>
+          </div>
+          <div class="verdict-paper__section">
+            <div class="verdict-paper__label">THE REASONING</div>
+            <div class="verdict-paper__reasoning" data-reasoning>&mdash;</div>
+          </div>
+          <div class="verdict-stamp" data-damages-stamp>&mdash;</div>
+          <div class="verdict-paper__footer">
+            <span class="verdict-paper__signed">So ordered.</span>
+            <button class="btn btn--dark" data-action="advance" disabled
+              title="Coming soon — needs a backend transition endpoint">Let the Jury Weigh In →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phase" data-phase="jury_vote" hidden>
+      <div class="phase__inner">
+        <div class="eyebrow">THE JURY DELIBERATES</div>
+        <div class="prompt-reminder">Case #<span data-case-number>0</span>: <span data-prompt>&mdash;</span> — vote
+          on your own device!</div>
+        <div class="tallies">
+          <div class="tally">
+            <div class="tally__count" data-plaintiff-votes>0</div>
+            <div class="tally__bar">
+              <div class="tally__bar-fill tally__bar-fill--plaintiff" data-plaintiff-bar></div>
+            </div>
+            <div class="avatar" data-plaintiff-avatar></div>
+            <div class="litigant__name" data-plaintiff-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--plaintiff">PLAINTIFF</div>
+          </div>
+          <div class="tally">
+            <div class="tally__count" data-defendant-votes>0</div>
+            <div class="tally__bar">
+              <div class="tally__bar-fill tally__bar-fill--defendant" data-defendant-bar></div>
+            </div>
+            <div class="avatar" data-defendant-avatar></div>
+            <div class="litigant__name" data-defendant-name>&mdash;</div>
+            <div class="litigant__badge litigant__badge--defendant">DEFENDANT</div>
+          </div>
+        </div>
+        <div class="vote-status" data-vote-status>0 / 0 jurors have voted…</div>
+        <button class="btn btn--primary" data-action="advance" disabled
+          title="Coming soon — needs a backend transition endpoint">The Jury Has Spoken →</button>
+      </div>
+    </section>
+
+    <section class="phase" data-phase="scoreboard" hidden>
+      <div class="phase__inner">
+        <div class="eyebrow">THE PETTY LEDGER</div>
+        <p class="muted-note">Standings after Case #<span data-case-number>0</span></p>
+        <div class="score-rows" data-score-rows></div>
+        <button class="btn btn--primary" data-action="advance" disabled
+          title="Coming soon — needs a backend transition endpoint">Next Case →</button>
+      </div>
+    </section>
+
+    <section class="phase" data-phase="finale" hidden>
+      <div class="phase__inner">
+        <div class="finale-title">COURT IS ADJOURNED</div>
+        <div class="finale-champ">
+          <div class="avatar avatar--big" data-champ-avatar></div>
+          <div class="finale-champ__name" data-champ-name>&mdash;</div>
+          <div class="finale-champ__pts">PETTIEST OF THEM ALL · <span data-champ-pts>0</span> Petty Points</div>
+        </div>
+        <button class="btn btn--primary" data-action="new-session">New Session</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="/static/shared/avatar.js"></script>
+<script src="/static/host/host.js"></script>
+</body>
+</html>

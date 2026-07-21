@@ -1,0 +1,500 @@
+body {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tv-frame {
+  width: min(1100px, 100%);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.brand__title {
+  font-family: var(--pc-font-display);
+  font-size: 26px;
+  color: var(--pc-gold);
+  letter-spacing: 1px;
+}
+
+.brand__subtitle {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--pc-muted);
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.join-code-badge {
+  background: var(--pc-paper);
+  color: var(--pc-navy);
+  border-radius: 14px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.25);
+}
+
+.join-code-badge__label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: var(--pc-muted-dark);
+}
+
+.join-code-badge__value {
+  font-family: var(--pc-font-display);
+  font-size: 22px;
+  letter-spacing: 5px;
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: radial-gradient(900px 500px at 50% 0%, var(--pc-navy-panel), var(--pc-navy));
+  border: 10px solid #0b0f1d;
+  border-radius: 22px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.phase {
+  position: absolute;
+  inset: 0;
+}
+
+.phase__inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 24px 48px;
+  text-align: center;
+}
+
+/* Lobby */
+.lobby-intro {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.lobby-intro__judge {
+  font-size: 60px;
+}
+
+.lobby-intro__logo {
+  font-family: var(--pc-font-display);
+  font-size: 48px;
+  line-height: 0.95;
+  color: var(--pc-gold);
+  text-align: left;
+}
+
+.lobby-intro__hint {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pc-cream);
+  max-width: 440px;
+  text-align: left;
+}
+
+.lobby-seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 820px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.lobby-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 66px;
+}
+
+.lobby-seat__name {
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+}
+
+.lobby-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.lobby-start__count {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pc-muted-dark);
+}
+
+.lobby-start__hint {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--pc-red);
+}
+
+/* Case reveal / arguments shared bits */
+.case-card {
+  background: #edc97a;
+  border-radius: 16px;
+  transform: rotate(-1deg);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+  width: 600px;
+  max-width: 90%;
+  position: relative;
+}
+
+.case-card__number {
+  position: absolute;
+  top: -22px;
+  left: 30px;
+  background: #edc97a;
+  border-radius: 10px 10px 0 0;
+  padding: 5px 18px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #6e4620;
+}
+
+.case-card__prompt {
+  background: var(--pc-paper);
+  margin: 14px;
+  border-radius: 10px;
+  padding: 24px 26px;
+  font-family: var(--pc-font-display);
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--pc-navy);
+}
+
+.litigants {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.litigants__vs {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--pc-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pc-font-display);
+  font-size: 18px;
+  box-shadow: 0 5px 0 var(--pc-red-dark);
+}
+
+.litigant,
+.writer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.writer {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--pc-border);
+  border-radius: 20px;
+  padding: 16px 26px;
+}
+
+.litigant__name {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.litigant__badge {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.litigant__badge--plaintiff {
+  background: var(--pc-gold);
+  color: #3a2a0a;
+}
+
+.litigant__badge--defendant {
+  background: var(--pc-border);
+  color: var(--pc-cream);
+}
+
+.writers {
+  display: flex;
+  gap: 50px;
+}
+
+.prompt-reminder {
+  font-family: var(--pc-font-display);
+  font-size: 24px;
+}
+
+/* Verdict */
+.verdict-layout {
+  height: 100%;
+  display: flex;
+}
+
+.courtroom {
+  flex: 1.2;
+  position: relative;
+  background: linear-gradient(#223055 0 55%, #6e4620 55% 57%, #8a5a2e 57%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.courtroom__judge {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 64px;
+}
+
+.courtroom__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 180px;
+}
+
+.courtroom__ribbon {
+  background: var(--pc-gold);
+  color: #3a2a0a;
+  font-family: var(--pc-font-display);
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 var(--pc-gold-dark);
+}
+
+.verdict-paper {
+  flex: 1;
+  background: var(--pc-paper);
+  border-left: 8px solid #6e4620;
+  padding: 20px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--pc-navy);
+  overflow-y: auto;
+}
+
+.verdict-paper__title {
+  font-family: var(--pc-font-display);
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--pc-red);
+  text-align: center;
+}
+
+.verdict-paper__label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #b0651f;
+}
+
+.verdict-paper__ruling {
+  font-family: var(--pc-font-display);
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.verdict-paper__reasoning {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3b4468;
+}
+
+.verdict-stamp {
+  border: 3px solid var(--pc-red);
+  outline: 2px solid var(--pc-red);
+  outline-offset: 3px;
+  color: var(--pc-red);
+  font-family: var(--pc-font-display);
+  font-size: 16px;
+  padding: 8px 16px;
+  text-align: center;
+}
+
+.verdict-paper__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.verdict-paper__signed {
+  font-size: 12px;
+  font-weight: 800;
+  font-style: italic;
+  color: #6e4620;
+}
+
+/* Jury vote */
+.tallies {
+  display: flex;
+  gap: 50px;
+}
+
+.tally {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 220px;
+}
+
+.tally__count {
+  font-family: var(--pc-font-display);
+  font-size: 32px;
+}
+
+.tally__bar {
+  width: 100%;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.tally__bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.tally__bar-fill--plaintiff {
+  background: var(--pc-gold);
+}
+
+.tally__bar-fill--defendant {
+  background: #58a6d6;
+}
+
+.vote-status {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pc-muted-dark);
+}
+
+/* Scoreboard */
+.score-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 560px;
+  max-width: 90%;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--pc-border);
+  border-radius: 14px;
+  padding: 7px 16px;
+}
+
+.score-row--leader {
+  background: rgba(240, 180, 41, 0.1);
+  border-color: var(--pc-gold);
+}
+
+.score-row__rank {
+  font-family: var(--pc-font-display);
+  font-size: 16px;
+  color: var(--pc-gold);
+  width: 24px;
+}
+
+.score-row__name {
+  font-size: 15px;
+  font-weight: 900;
+  flex: 1;
+  text-align: left;
+}
+
+.score-row__pts {
+  font-family: var(--pc-font-display);
+  font-size: 18px;
+}
+
+/* Finale */
+.finale-title {
+  font-family: var(--pc-font-display);
+  font-size: 44px;
+  color: var(--pc-gold);
+}
+
+.finale-champ {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.finale-champ__name {
+  font-family: var(--pc-font-display);
+  font-size: 26px;
+}
+
+.finale-champ__pts {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--pc-gold);
+}
+
+.avatar--big {
+  width: 96px;
+  height: 96px;
+  font-size: 36px;
+}
