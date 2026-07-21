@@ -28,7 +28,10 @@ def _current_case(game):
 
 def _score_rows(game):
     return sorted(
-        ({"name": p.name, "pts": p.score} for p in game.players),
+        (
+            {"name": p.name, "pts": p.score, "connected": p.connected}
+            for p in game.players
+        ),
         key=lambda r: -r["pts"],
     )
 

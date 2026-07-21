@@ -96,10 +96,28 @@ def test_finale_state_includes_full_standings_not_just_the_champion(db):
     assert state["champ_name"] == "Alex"
     assert state["champ_pts"] == 500
     assert state["score_rows"] == [
-        {"name": "Alex", "pts": 500},
-        {"name": "Sam", "pts": 300},
-        {"name": "Jordan", "pts": 100},
+        {"name": "Alex", "pts": 500, "connected": True},
+        {"name": "Sam", "pts": 300, "connected": True},
+        {"name": "Jordan", "pts": 100, "connected": True},
     ]
+
+
+def test_score_rows_flag_players_who_left_mid_game(db):
+    game = create_room()
+    join_room(game.join_code, "Alex")
+    join_room(game.join_code, "Sam")
+    game = start_game(game.join_code, game.host_token)
+
+    players = {p.name: p for p in game.players}
+    players["Sam"].connected = False
+    game.state = SCOREBOARD
+    db.session.commit()
+
+    state = build_state(game)
+
+    rows_by_name = {row["name"]: row for row in state["score_rows"]}
+    assert rows_by_name["Alex"]["connected"] is True
+    assert rows_by_name["Sam"]["connected"] is False
 
 
 def test_polling_endpoint_returns_full_state(client, db):

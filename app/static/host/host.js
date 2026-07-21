@@ -121,6 +121,7 @@ function renderScoreRows(container, rows) {
   rows.forEach((row, index) => {
     const rowEl = document.createElement("div");
     rowEl.className = "score-row" + (index === 0 ? " score-row--leader" : "");
+    rowEl.classList.toggle("score-row--disconnected", row.connected === false);
 
     const rank = document.createElement("div");
     rank.className = "score-row__rank";
@@ -134,11 +135,20 @@ function renderScoreRows(container, rows) {
     name.className = "score-row__name";
     name.textContent = row.name;
 
+    rowEl.append(rank, avatar, name);
+
+    if (row.connected === false) {
+      const badge = document.createElement("div");
+      badge.className = "score-row__badge";
+      badge.textContent = "LEFT";
+      rowEl.append(badge);
+    }
+
     const pts = document.createElement("div");
     pts.className = "score-row__pts";
     pts.textContent = `${row.pts} pts`;
 
-    rowEl.append(rank, avatar, name, pts);
+    rowEl.append(pts);
     container.append(rowEl);
   });
 }
