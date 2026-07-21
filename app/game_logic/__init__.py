@@ -12,6 +12,18 @@ from app.game_logic.state_machine import (
     next_state,
 )
 from app.game_logic.role_assignment import NotEnoughPlayers, select_litigants
+from app.game_logic.judge import (
+    DEFENDANT,
+    JudgeClientError,
+    PLAINTIFF,
+    SYSTEM_PROMPT,
+    Verdict,
+    VerdictParseError,
+    build_user_prompt,
+    fallback_verdict,
+    judge_case,
+    parse_verdict,
+)
 
 __all__ = [
     "ALL_STATES",
@@ -27,5 +39,14 @@ __all__ = [
     "can_advance_to",
     "next_state",
     "select_litigants",
+    "DEFENDANT",
+    "JudgeClientError",
+    "PLAINTIFF",
+    "SYSTEM_PROMPT",
+    "Verdict",
+    "VerdictParseError",
+    "build_user_prompt",
+    "fallback_verdict",
+    "judge_case",
+    "parse_verdict",
 ]
-
