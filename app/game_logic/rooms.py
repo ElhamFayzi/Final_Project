@@ -1,9 +1,18 @@
 from app.db import db
 from app.game_logic.tokens import generate_join_code
-from app.game_logic.state_machine import CASE_REVEAL, ARGUMENTS, can_advance_to
+from app.game_logic.state_machine import (
+    CASE_REVEAL,
+    ARGUMENTS,
+    JURY_VOTE,
+    SCOREBOARD,
+    FINALE,
+    can_advance_to,
+    next_state,
+)
 from app.game_logic.role_assignment import select_litigants, NotEnoughPlayers
 from app.game_logic.prompts import random_prompt
-from app.models import Game, Player, Case
+from app.game_logic.scoring import calculate_score_deltas
+from app.models import Game, Player, Case, Vote
 
 MAX_PLAYERS = 200
 MAX_NAME_LENGTH = 20
@@ -11,6 +20,10 @@ MAX_ARGUMENT_LENGTH = 1000
 JOIN_CODE_LENGTH = 4
 JOIN_CODE_MAX_ATTEMPTS = 20
 MIN_PLAYERS_TO_START = 2
+VALID_VOTE_CHOICES = ("plaintiff", "defendant")
+DEFAULT_TARGET_TURNS = 2
+MIN_TARGET_TURNS = 1
+MAX_TARGET_TURNS = 20
 
 
 class RoomError(ValueError):
@@ -43,15 +56,38 @@ def _litigation_counts(game, players):
     return counts
 
 
-def create_room():
+def _clean_target_turns(value):
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        return DEFAULT_TARGET_TURNS
+    return max(MIN_TARGET_TURNS, min(MAX_TARGET_TURNS, value))
+
+
+def create_room(target_turns=None):
+    clean_target_turns = _clean_target_turns(target_turns) if target_turns is not None else DEFAULT_TARGET_TURNS
     for _ in range(JOIN_CODE_MAX_ATTEMPTS):
         code = generate_join_code(JOIN_CODE_LENGTH)
         if get_room_by_code(code) is None:
-            game = Game(join_code=code)
+            game = Game(join_code=code, target_turns=clean_target_turns)
             db.session.add(game)
             db.session.commit()
             return game
     raise RoomError("Could not generate a unique room code, please try again.")
+
+
+def set_target_turns(join_code, host_token, target_turns):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to change this game's settings.")
+    if game.state != "lobby":
+        raise RoomError("Can't change settings after the game has started.")
+
+    game.target_turns = _clean_target_turns(target_turns)
+    db.session.commit()
+    return game
 
 
 def join_room(join_code, name):
@@ -99,19 +135,11 @@ def leave_room(join_code, token):
     db.session.commit()
 
 
-def start_game(join_code, host_token):
-    game = get_room_by_code(join_code)
-    if game is None:
-        raise RoomError("Room not found.")
-    if game.host_token != host_token:
-        raise RoomError("Not authorized to start this game.")
-    if not can_advance_to(game.state, CASE_REVEAL):
-        raise RoomError(f"Cannot start a game from state '{game.state}'.")
-
-    players = connected_players(game)
-    if len(players) < MIN_PLAYERS_TO_START:
-        raise RoomError(f"Need at least {MIN_PLAYERS_TO_START} players to start.")
-
+def _begin_new_round(game, players):
+    """Pick this round's litigants, create its Case, and advance the game
+    into CASE_REVEAL. Shared by start_game (round 1) and advance_to_next_case
+    (round 2+), since both are "begin a fresh round" moments.
+    """
     litigation_counts = _litigation_counts(game, players)
     try:
         plaintiff_id, defendant_id = select_litigants(
@@ -135,6 +163,22 @@ def start_game(join_code, host_token):
         defendant_avatar=defendant.avatar,
     )
     db.session.add(case)
+
+
+def start_game(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to start this game.")
+    if not can_advance_to(game.state, CASE_REVEAL):
+        raise RoomError(f"Cannot start a game from state '{game.state}'.")
+
+    players = connected_players(game)
+    if len(players) < MIN_PLAYERS_TO_START:
+        raise RoomError(f"Need at least {MIN_PLAYERS_TO_START} players to start.")
+
+    _begin_new_round(game, players)
     db.session.commit()
     return game
 
@@ -145,6 +189,16 @@ def _current_case(game):
         .order_by(Case.id.desc())
         .first()
     )
+
+
+def _game_is_complete(game, players):
+    """Whether every currently connected player has litigated at least
+    game.target_turns times. role_assignment's fairness guarantee (spread
+    between most- and least-litigated stays <= 1) is what makes this a
+    reliable stopping point rather than an arbitrary round count.
+    """
+    counts = _litigation_counts(game, players)
+    return all(counts.get(p.id, 0) >= game.target_turns for p in players)
 
 
 def advance_to_arguments(join_code, host_token):
@@ -189,3 +243,116 @@ def submit_argument(join_code, player_token, text):
 
     db.session.commit()
     return case
+
+
+def advance_to_jury_vote(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to advance this game.")
+    if not can_advance_to(game.state, JURY_VOTE):
+        raise RoomError(f"Cannot open jury voting from state '{game.state}'.")
+
+    game.state = JURY_VOTE
+    db.session.commit()
+    return game
+
+
+def cast_vote(join_code, player_token, choice):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.state != JURY_VOTE:
+        raise RoomError("Voting isn't open for this case.")
+
+    player = get_player_by_token(game, player_token)
+    if player is None:
+        raise RoomError("Player not found in this room.")
+
+    if choice not in VALID_VOTE_CHOICES:
+        raise RoomError("Choice must be 'plaintiff' or 'defendant'.")
+
+    case = _current_case(game)
+    if case is None:
+        raise RoomError("No case is currently in progress.")
+
+    if player.name in (case.plaintiff_name, case.defendant_name):
+        raise RoomError("Litigants can't vote on their own case.")
+
+    vote = Vote.query.filter_by(case_id=case.id, player_id=player.id).first()
+    if vote is None:
+        vote = Vote(case_id=case.id, player_id=player.id, choice=choice)
+        db.session.add(vote)
+    else:
+        vote.choice = choice
+
+    db.session.commit()
+    return vote
+
+
+def advance_to_scoreboard(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to advance this game.")
+    if not can_advance_to(game.state, SCOREBOARD):
+        raise RoomError(f"Cannot open the scoreboard from state '{game.state}'.")
+
+    case = _current_case(game)
+    if case is None or case.winner not in VALID_VOTE_CHOICES:
+        raise RoomError("This case doesn't have a verdict yet.")
+
+    id_to_name = {p.id: p.name for p in game.players}
+    votes = [(id_to_name[v.player_id], v.choice) for v in case.votes if v.player_id in id_to_name]
+    deltas = calculate_score_deltas(case.plaintiff_name, case.defendant_name, case.winner, case.damages, votes)
+
+    name_to_player = {p.name: p for p in game.players}
+    for player_name, points in deltas.items():
+        player = name_to_player.get(player_name)
+        if player is not None:
+            player.score += points
+
+    game.state = SCOREBOARD
+    db.session.commit()
+    return game
+
+
+def advance_to_next_case(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to advance this game.")
+    if game.state != SCOREBOARD:
+        raise RoomError(f"Cannot start the next case from state '{game.state}'.")
+
+    players = connected_players(game)
+    target = next_state(game.state, is_last_round=_game_is_complete(game, players))
+
+    if target == FINALE:
+        game.state = FINALE
+        db.session.commit()
+        return game
+
+    if len(players) < MIN_PLAYERS_TO_START:
+        raise RoomError(f"Need at least {MIN_PLAYERS_TO_START} players to continue.")
+
+    _begin_new_round(game, players)
+    db.session.commit()
+    return game
+
+
+def end_game_now(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to end this game.")
+    if game.state == FINALE:
+        raise RoomError("This game has already ended.")
+
+    game.state = FINALE
+    db.session.commit()
+    return game

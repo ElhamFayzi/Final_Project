@@ -20,8 +20,6 @@ petty-court/
 └── README.md
 ```
 
-`game_logic/` is meant to stay pure and DB-free (see `state_machine.py`, `role_assignment.py`), but `rooms.py`/`tokens.py` currently live there too even though they do touch the database — that's a known, deliberate placement to revisit later, not an oversight. `services/` doesn't exist yet either; both get added once there's an actual reason to split things out further.
-
 Feel free to add to or change the structure.
 
 You can run tests by running `pytest` or `pytest -v` at the repo root.
