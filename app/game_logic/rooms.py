@@ -1,8 +1,9 @@
 from app.db import db
 from app.game_logic.tokens import generate_join_code
-from app.game_logic.state_machine import CASE_REVEAL, ARGUMENTS, JURY_VOTE, can_advance_to
+from app.game_logic.state_machine import CASE_REVEAL, ARGUMENTS, JURY_VOTE, SCOREBOARD, can_advance_to
 from app.game_logic.role_assignment import select_litigants, NotEnoughPlayers
 from app.game_logic.prompts import random_prompt
+from app.game_logic.scoring import calculate_score_deltas
 from app.models import Game, Player, Case, Vote
 
 MAX_PLAYERS = 200
@@ -236,3 +237,31 @@ def cast_vote(join_code, player_token, choice):
 
     db.session.commit()
     return vote
+
+
+def advance_to_scoreboard(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to advance this game.")
+    if not can_advance_to(game.state, SCOREBOARD):
+        raise RoomError(f"Cannot open the scoreboard from state '{game.state}'.")
+
+    case = _current_case(game)
+    if case is None or case.winner not in VALID_VOTE_CHOICES:
+        raise RoomError("This case doesn't have a verdict yet.")
+
+    id_to_name = {p.id: p.name for p in game.players}
+    votes = [(id_to_name[v.player_id], v.choice) for v in case.votes if v.player_id in id_to_name]
+    deltas = calculate_score_deltas(case.plaintiff_name, case.defendant_name, case.winner, case.damages, votes)
+
+    name_to_player = {p.name: p for p in game.players}
+    for player_name, points in deltas.items():
+        player = name_to_player.get(player_name)
+        if player is not None:
+            player.score += points
+
+    game.state = SCOREBOARD
+    db.session.commit()
+    return game
