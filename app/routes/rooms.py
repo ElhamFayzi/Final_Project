@@ -4,6 +4,7 @@ from app.game_logic.rooms import (
     RoomError,
     advance_to_arguments,
     advance_to_jury_vote,
+    advance_to_scoreboard,
     cast_vote,
     create_room,
     get_room_by_code,
@@ -115,3 +116,14 @@ def vote(code):
         return _error(str(exc))
 
     return jsonify({"success": True})
+
+
+@rooms_bp.route("/<code>/tally", methods=["POST"])
+def tally(code):
+    payload = request.get_json(silent=True) or {}
+    try:
+        game = advance_to_scoreboard(code, payload.get("host_token", ""))
+    except RoomError as exc:
+        return _error(str(exc))
+
+    return jsonify({"success": True, **build_state(game)})
