@@ -1,0 +1,97 @@
+:root {
+  --pc-navy-dark: #151b33;
+  --pc-navy: #1c2340;
+  --pc-navy-panel: #2a3663;
+  --pc-border: #3d4874;
+  --pc-gold: #f0b429;
+  --pc-gold-dark: #b27f0b;
+  --pc-cream: #f5edda;
+  --pc-paper: #fbf6e7;
+  --pc-muted: #9aa3c4;
+  --pc-muted-dark: #8a93b8;
+  --pc-red: #ce3f36;
+  --pc-red-dark: #8e2620;
+  --pc-green: #2e7d4f;
+
+  --pc-font-display: "Lilita One", system-ui, sans-serif;
+  --pc-font-body: "Nunito", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--pc-font-body);
+  background: var(--pc-navy-dark);
+  color: var(--pc-cream);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 10px 24px;
+}
+
+.btn--primary {
+  background: var(--pc-gold);
+  color: #3a2a0a;
+  font-family: var(--pc-font-display);
+  font-size: 18px;
+  box-shadow: 0 5px 0 var(--pc-gold-dark);
+}
+
+.btn--dark {
+  background: var(--pc-navy);
+  color: var(--pc-cream);
+  font-family: var(--pc-font-display);
+  font-size: 14px;
+  box-shadow: 0 4px 0 #12182e;
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 2px solid var(--pc-border);
+  color: var(--pc-muted);
+  font-size: 12px;
+  padding: 8px 16px;
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--pc-muted-dark);
+}
+
+.muted-note {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pc-muted);
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pc-font-display);
+  font-size: 22px;
+  color: #2b1e12;
+  border: 3px solid #2b1e12;
+}
