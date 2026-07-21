@@ -1,4 +1,4 @@
-JURY_BONUS = 100
+JURY_BONUS = 50
 
 
 def calculate_score_deltas(plaintiff_name, defendant_name, winner, damages, votes):
