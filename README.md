@@ -5,17 +5,23 @@
 ```
 petty-court/
 ├── app/
-│   ├── app.py          # Flask app entrypoint
-│   ├── db.py            # SQLAlchemy setup
-│   ├── game_logic/      # Pure game logic (state machine, role assignment); no I/O nor Flask
-│   ├── models/           # SQLAlchemy models (Player, Game, Case, Vote, etc.)
-│   ├── static/            # CSS, JS, images served to the browser
-│   └── templates/         # Jinja templates
-├── instance/              # Local instance data (e.g. the SQLite db file)
-├── tests/                 # Automated tests
+│   ├── __init__.py      # create_app() factory: config, db.init_app(), db.create_all(), blueprint registration
+│   ├── db.py              # db = SQLAlchemy() instance
+│   ├── game_logic/         # State machine + role assignment (pure, no I/O) and room/token logic (touches the db)
+│   ├── models/               # SQLAlchemy models (Game, Player, Case, Vote)
+│   ├── routes/                 # Flask blueprints; parse the request, call into game_logic/, return a response
+│   ├── static/                   # CSS, JS, images served to the browser
+│   │   └── host/                   # Big-screen shell (host.html/js/css)
+│   └── templates/                   # Jinja templates
+├── instance/                          # Local instance data (e.g. the SQLite db file) — gitignored
+├── tests/                               # Automated tests
 ├── requirements.txt
+├── run.py                                # Entrypoint — creates the app, runs the dev server
 └── README.md
 ```
 
-Feel free to add to or change the structure
+`game_logic/` is meant to stay pure and DB-free (see `state_machine.py`, `role_assignment.py`), but `rooms.py`/`tokens.py` currently live there too even though they do touch the database — that's a known, deliberate placement to revisit later, not an oversight. `services/` doesn't exist yet either; both get added once there's an actual reason to split things out further.
+
+Feel free to add to or change the structure.
+
 You can run tests by running `pytest` or `pytest -v` at the repo root.

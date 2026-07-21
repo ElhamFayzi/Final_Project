@@ -1,12 +1,13 @@
 from app.db import db
 from app.game_logic.tokens import generate_join_code
-from app.game_logic.state_machine import CASE_REVEAL, can_advance_to
+from app.game_logic.state_machine import CASE_REVEAL, ARGUMENTS, can_advance_to
 from app.game_logic.role_assignment import select_litigants, NotEnoughPlayers
 from app.game_logic.prompts import random_prompt
 from app.models import Game, Player, Case
 
 MAX_PLAYERS = 200
 MAX_NAME_LENGTH = 20
+MAX_ARGUMENT_LENGTH = 1000
 JOIN_CODE_LENGTH = 4
 JOIN_CODE_MAX_ATTEMPTS = 20
 MIN_PLAYERS_TO_START = 2
@@ -24,6 +25,22 @@ def get_room_by_code(join_code):
 
 def connected_players(game):
     return [p for p in game.players if p.connected]
+
+
+def _litigation_counts(game, players):
+    """How many times each player has already been plaintiff/defendant
+    in this game. Matches on name rather than a foreign key, since Case
+    snapshots names as plain text (see app/models/case.py) and join_room
+    already enforces unique names within a single game.
+    """
+    counts = {p.id: 0 for p in players}
+    name_to_id = {p.name: p.id for p in players}
+    for case in Case.query.filter_by(game_id=game.id).all():
+        if case.plaintiff_name in name_to_id:
+            counts[name_to_id[case.plaintiff_name]] += 1
+        if case.defendant_name in name_to_id:
+            counts[name_to_id[case.defendant_name]] += 1
+    return counts
 
 
 def create_room():
@@ -95,7 +112,7 @@ def start_game(join_code, host_token):
     if len(players) < MIN_PLAYERS_TO_START:
         raise RoomError(f"Need at least {MIN_PLAYERS_TO_START} players to start.")
 
-    litigation_counts = {p.id: 0 for p in players}
+    litigation_counts = _litigation_counts(game, players)
     try:
         plaintiff_id, defendant_id = select_litigants(
             [p.id for p in players], litigation_counts
@@ -120,3 +137,55 @@ def start_game(join_code, host_token):
     db.session.add(case)
     db.session.commit()
     return game
+
+
+def _current_case(game):
+    return (
+        Case.query.filter_by(game_id=game.id, case_number=game.round_number)
+        .order_by(Case.id.desc())
+        .first()
+    )
+
+
+def advance_to_arguments(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to advance this game.")
+    if not can_advance_to(game.state, ARGUMENTS):
+        raise RoomError(f"Cannot hear arguments from state '{game.state}'.")
+
+    game.state = ARGUMENTS
+    db.session.commit()
+    return game
+
+
+def submit_argument(join_code, player_token, text):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.state != ARGUMENTS:
+        raise RoomError("Arguments aren't open for this case.")
+
+    player = get_player_by_token(game, player_token)
+    if player is None:
+        raise RoomError("Player not found in this room.")
+
+    case = _current_case(game)
+    if case is None:
+        raise RoomError("No case is currently in progress.")
+
+    clean_text = (text or "").strip()[:MAX_ARGUMENT_LENGTH]
+    if not clean_text:
+        raise RoomError("Enter an argument before submitting.")
+
+    if player.name == case.plaintiff_name:
+        case.plaintiff_argument = clean_text
+    elif player.name == case.defendant_name:
+        case.defendant_argument = clean_text
+    else:
+        raise RoomError("You are not a litigant in this case.")
+
+    db.session.commit()
+    return case

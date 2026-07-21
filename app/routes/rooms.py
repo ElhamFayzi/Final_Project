@@ -2,11 +2,13 @@ from flask import Blueprint, jsonify, request
 
 from app.game_logic.rooms import (
     RoomError,
+    advance_to_arguments,
     create_room,
     get_room_by_code,
     join_room,
     leave_room,
     start_game,
+    submit_argument,
 )
 from app.game_logic.state_view import build_state
 
@@ -67,3 +69,25 @@ def start(code):
         return _error(str(exc))
 
     return jsonify({"success": True, **build_state(game)})
+
+
+@rooms_bp.route("/<code>/argue", methods=["POST"])
+def argue(code):
+    payload = request.get_json(silent=True) or {}
+    try:
+        game = advance_to_arguments(code, payload.get("host_token", ""))
+    except RoomError as exc:
+        return _error(str(exc))
+
+    return jsonify({"success": True, **build_state(game)})
+
+
+@rooms_bp.route("/<code>/argument", methods=["POST"])
+def argument(code):
+    payload = request.get_json(silent=True) or {}
+    try:
+        submit_argument(code, payload.get("token", ""), payload.get("text", ""))
+    except RoomError as exc:
+        return _error(str(exc))
+
+    return jsonify({"success": True})
