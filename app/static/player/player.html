@@ -87,22 +87,21 @@
     <div class="vote-header">
       <div class="vote-header__title">WHO WON?</div>
     </div>
-    <button type="button" class="vote-option" data-action="vote-plaintiff" disabled
-      title="Coming soon — needs a backend vote endpoint">
+    <button type="button" class="vote-option" data-action="vote-plaintiff">
       <div class="avatar" data-plaintiff-avatar></div>
       <div class="vote-option__info">
         <div class="vote-option__name" data-plaintiff-name>—</div>
         <div class="vote-option__role">PLAINTIFF</div>
       </div>
     </button>
-    <button type="button" class="vote-option" data-action="vote-defendant" disabled
-      title="Coming soon — needs a backend vote endpoint">
+    <button type="button" class="vote-option" data-action="vote-defendant">
       <div class="avatar" data-defendant-avatar></div>
       <div class="vote-option__info">
         <div class="vote-option__name" data-defendant-name>—</div>
         <div class="vote-option__role">DEFENDANT</div>
       </div>
     </button>
+    <div class="field__error" data-vote-error hidden></div>
   </section>
 
   <section class="view" data-view="on-trial" hidden>

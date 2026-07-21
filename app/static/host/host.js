@@ -16,18 +16,9 @@ async function fetchState(joinCode) {
   return res.json();
 }
 
-async function startCourt(joinCode) {
+async function postHostAction(joinCode, action) {
   const hostToken = localStorage.getItem(STORAGE_TOKEN_KEY);
-  await fetch(`/api/rooms/${joinCode}/start`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ host_token: hostToken }),
-  });
-}
-
-async function hearArguments(joinCode) {
-  const hostToken = localStorage.getItem(STORAGE_TOKEN_KEY);
-  await fetch(`/api/rooms/${joinCode}/argue`, {
+  await fetch(`/api/rooms/${joinCode}/${action}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ host_token: hostToken }),
@@ -175,11 +166,17 @@ async function main() {
   }
 
   document.querySelector('[data-action="new-session"]').addEventListener("click", newSession);
-  document.querySelector('[data-action="start-court"]').addEventListener("click", () => startCourt(joinCode));
+  document
+    .querySelector('[data-action="start-court"]')
+    .addEventListener("click", () => postHostAction(joinCode, "start"));
 
   document
     .querySelector('[data-phase="case_reveal"] [data-action="advance"]')
-    .addEventListener("click", () => hearArguments(joinCode));
+    .addEventListener("click", () => postHostAction(joinCode, "argue"));
+
+  document
+    .querySelector('[data-phase="verdict"] [data-action="advance"]')
+    .addEventListener("click", () => postHostAction(joinCode, "deliberate"));
 
   async function poll() {
     const state = await fetchState(joinCode);

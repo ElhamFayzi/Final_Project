@@ -3,6 +3,8 @@ from flask import Blueprint, jsonify, request
 from app.game_logic.rooms import (
     RoomError,
     advance_to_arguments,
+    advance_to_jury_vote,
+    cast_vote,
     create_room,
     get_room_by_code,
     join_room,
@@ -87,6 +89,28 @@ def argument(code):
     payload = request.get_json(silent=True) or {}
     try:
         submit_argument(code, payload.get("token", ""), payload.get("text", ""))
+    except RoomError as exc:
+        return _error(str(exc))
+
+    return jsonify({"success": True})
+
+
+@rooms_bp.route("/<code>/deliberate", methods=["POST"])
+def deliberate(code):
+    payload = request.get_json(silent=True) or {}
+    try:
+        game = advance_to_jury_vote(code, payload.get("host_token", ""))
+    except RoomError as exc:
+        return _error(str(exc))
+
+    return jsonify({"success": True, **build_state(game)})
+
+
+@rooms_bp.route("/<code>/vote", methods=["POST"])
+def vote(code):
+    payload = request.get_json(silent=True) or {}
+    try:
+        cast_vote(code, payload.get("token", ""), payload.get("choice", ""))
     except RoomError as exc:
         return _error(str(exc))
 

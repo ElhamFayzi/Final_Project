@@ -1,9 +1,9 @@
 from app.db import db
 from app.game_logic.tokens import generate_join_code
-from app.game_logic.state_machine import CASE_REVEAL, ARGUMENTS, can_advance_to
+from app.game_logic.state_machine import CASE_REVEAL, ARGUMENTS, JURY_VOTE, can_advance_to
 from app.game_logic.role_assignment import select_litigants, NotEnoughPlayers
 from app.game_logic.prompts import random_prompt
-from app.models import Game, Player, Case
+from app.models import Game, Player, Case, Vote
 
 MAX_PLAYERS = 200
 MAX_NAME_LENGTH = 20
@@ -11,6 +11,7 @@ MAX_ARGUMENT_LENGTH = 1000
 JOIN_CODE_LENGTH = 4
 JOIN_CODE_MAX_ATTEMPTS = 20
 MIN_PLAYERS_TO_START = 2
+VALID_VOTE_CHOICES = ("plaintiff", "defendant")
 
 
 class RoomError(ValueError):
@@ -189,3 +190,49 @@ def submit_argument(join_code, player_token, text):
 
     db.session.commit()
     return case
+
+
+def advance_to_jury_vote(join_code, host_token):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.host_token != host_token:
+        raise RoomError("Not authorized to advance this game.")
+    if not can_advance_to(game.state, JURY_VOTE):
+        raise RoomError(f"Cannot open jury voting from state '{game.state}'.")
+
+    game.state = JURY_VOTE
+    db.session.commit()
+    return game
+
+
+def cast_vote(join_code, player_token, choice):
+    game = get_room_by_code(join_code)
+    if game is None:
+        raise RoomError("Room not found.")
+    if game.state != JURY_VOTE:
+        raise RoomError("Voting isn't open for this case.")
+
+    player = get_player_by_token(game, player_token)
+    if player is None:
+        raise RoomError("Player not found in this room.")
+
+    if choice not in VALID_VOTE_CHOICES:
+        raise RoomError("Choice must be 'plaintiff' or 'defendant'.")
+
+    case = _current_case(game)
+    if case is None:
+        raise RoomError("No case is currently in progress.")
+
+    if player.name in (case.plaintiff_name, case.defendant_name):
+        raise RoomError("Litigants can't vote on their own case.")
+
+    vote = Vote.query.filter_by(case_id=case.id, player_id=player.id).first()
+    if vote is None:
+        vote = Vote(case_id=case.id, player_id=player.id, choice=choice)
+        db.session.add(vote)
+    else:
+        vote.choice = choice
+
+    db.session.commit()
+    return vote
