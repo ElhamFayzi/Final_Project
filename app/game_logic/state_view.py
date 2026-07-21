@@ -26,6 +26,13 @@ def _current_case(game):
     )
 
 
+def _score_rows(game):
+    return sorted(
+        ({"name": p.name, "pts": p.score} for p in game.players),
+        key=lambda r: -r["pts"],
+    )
+
+
 def build_state(game):
     """
     Contract A — the single object every polling client renders from.
@@ -65,15 +72,12 @@ def build_state(game):
             state["votes"] = counts
 
     if game.state == SCOREBOARD:
-        rows = sorted(
-            ({"name": p.name, "pts": p.score} for p in game.players),
-            key=lambda r: -r["pts"],
-        )
-        state["score_rows"] = rows
+        state["score_rows"] = _score_rows(game)
 
     if game.state == FINALE and game.players:
         champ = max(game.players, key=lambda p: p.score)
         state["champ_name"] = champ.name
         state["champ_pts"] = champ.score
+        state["score_rows"] = _score_rows(game)
 
     return state

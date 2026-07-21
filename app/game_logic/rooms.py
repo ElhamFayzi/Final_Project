@@ -154,12 +154,14 @@ def _begin_new_round(game, players):
     plaintiff = next(p for p in players if p.id == plaintiff_id)
     defendant = next(p for p in players if p.id == defendant_id)
 
+    used_prompts = {c.prompt for c in Case.query.filter_by(game_id=game.id).all()}
+
     game.round_number += 1
     game.state = CASE_REVEAL
     case = Case(
         game_id=game.id,
         case_number=game.round_number,
-        prompt=random_prompt(),
+        prompt=random_prompt(exclude=used_prompts),
         plaintiff_name=plaintiff.name,
         plaintiff_avatar=plaintiff.avatar,
         defendant_name=defendant.name,
