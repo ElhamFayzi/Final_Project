@@ -37,6 +37,7 @@ def build_state(game):
         "phase": game.state,
         "join_code": game.join_code,
         "round": game.round_number,
+        "target_turns": game.target_turns,
         "players": [_player_public(p) for p in game.players],
     }
 

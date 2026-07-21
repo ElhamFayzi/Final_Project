@@ -23,6 +23,7 @@
         <span class="join-code-badge__label">ROOM CODE</span>
         <span class="join-code-badge__value" data-join-code>----</span>
       </div>
+      <button class="btn btn--ghost" data-action="end-game" hidden>End Game</button>
       <button class="btn btn--ghost" data-action="new-session">New Session</button>
     </div>
   </header>
@@ -40,6 +41,12 @@
           </div>
         </div>
         <div class="lobby-seats" data-lobby-seats></div>
+        <div class="lobby-settings">
+          <label class="lobby-settings__label" for="target-turns-input">Turns per player</label>
+          <input id="target-turns-input" class="lobby-settings__input" type="number" min="1" max="20"
+            data-target-turns-input>
+          <div class="lobby-settings__hint">Everyone litigates at least this many times before the game ends.</div>
+        </div>
         <div class="lobby-start">
           <div class="lobby-start__count"><span data-player-count>0</span> joined</div>
           <button class="btn btn--primary" data-action="start-court" disabled>Start Court</button>
@@ -156,8 +163,7 @@
           </div>
         </div>
         <div class="vote-status" data-vote-status>0 / 0 jurors have voted…</div>
-        <button class="btn btn--primary" data-action="advance" disabled
-          title="Coming soon — needs a backend transition endpoint">The Jury Has Spoken →</button>
+        <button class="btn btn--primary" data-action="advance">The Jury Has Spoken →</button>
       </div>
     </section>
 
@@ -166,8 +172,7 @@
         <div class="eyebrow">THE PETTY LEDGER</div>
         <p class="muted-note">Standings after Case #<span data-case-number>0</span></p>
         <div class="score-rows" data-score-rows></div>
-        <button class="btn btn--primary" data-action="advance" disabled
-          title="Coming soon — needs a backend transition endpoint">Next Case →</button>
+        <button class="btn btn--primary" data-action="advance">Next Case →</button>
       </div>
     </section>
 

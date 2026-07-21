@@ -16,12 +16,12 @@ async function fetchState(joinCode) {
   return res.json();
 }
 
-async function postHostAction(joinCode, action) {
+async function postHostAction(joinCode, action, extra = {}) {
   const hostToken = localStorage.getItem(STORAGE_TOKEN_KEY);
   await fetch(`/api/rooms/${joinCode}/${action}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ host_token: hostToken }),
+    body: JSON.stringify({ host_token: hostToken, ...extra }),
   });
 }
 
@@ -62,11 +62,20 @@ function renderLobby(state) {
   const canStart = state.players.length >= 2;
   startBtn.disabled = !canStart;
   document.querySelector("[data-need-more]").hidden = canStart;
+
+  const targetTurnsInput = document.querySelector("[data-target-turns-input]");
+  if (document.activeElement !== targetTurnsInput) {
+    targetTurnsInput.value = state.target_turns;
+  }
 }
 
 function renderLitigants(state) {
-  renderAvatar(document.querySelector("[data-plaintiff-avatar]"), state.plaintiff?.name);
-  renderAvatar(document.querySelector("[data-defendant-avatar]"), state.defendant?.name);
+  document
+    .querySelectorAll("[data-plaintiff-avatar]")
+    .forEach((el) => renderAvatar(el, state.plaintiff?.name));
+  document
+    .querySelectorAll("[data-defendant-avatar]")
+    .forEach((el) => renderAvatar(el, state.defendant?.name));
 
   const plaintiffNameEls = document.querySelectorAll("[data-plaintiff-name]");
   const defendantNameEls = document.querySelectorAll("[data-defendant-name]");
@@ -145,6 +154,9 @@ function render(state) {
   renderJoinCode(state.join_code);
   showPhase(state.phase);
 
+  document.querySelector('[data-action="end-game"]').hidden =
+    state.phase === "lobby" || state.phase === "finale";
+
   if (state.phase === "lobby") renderLobby(state);
   if (["case_reveal", "arguments", "verdict", "jury_vote"].includes(state.phase)) renderLitigants(state);
   if (state.phase === "verdict") renderVerdict(state);
@@ -177,6 +189,24 @@ async function main() {
   document
     .querySelector('[data-phase="verdict"] [data-action="advance"]')
     .addEventListener("click", () => postHostAction(joinCode, "deliberate"));
+
+  document
+    .querySelector('[data-phase="jury_vote"] [data-action="advance"]')
+    .addEventListener("click", () => postHostAction(joinCode, "tally"));
+
+  document
+    .querySelector('[data-phase="scoreboard"] [data-action="advance"]')
+    .addEventListener("click", () => postHostAction(joinCode, "next-case"));
+
+  document.querySelector('[data-action="end-game"]').addEventListener("click", () => {
+    if (confirm("End the game now and show final standings?")) {
+      postHostAction(joinCode, "end");
+    }
+  });
+
+  document.querySelector("[data-target-turns-input]").addEventListener("change", (event) => {
+    postHostAction(joinCode, "settings", { target_turns: Number(event.target.value) });
+  });
 
   async function poll() {
     const state = await fetchState(joinCode);

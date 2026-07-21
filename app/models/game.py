@@ -10,6 +10,7 @@ class Game(db.Model):
     host_token = db.Column(db.String(64), nullable=False, default=generate_token)
     state = db.Column(db.String(32), nullable=False, default="lobby")
     round_number = db.Column(db.Integer, nullable=False, default=0)
+    target_turns = db.Column(db.Integer, nullable=False, default=2)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     players = db.relationship("Player", back_populates="game", cascade="all, delete-orphan")
