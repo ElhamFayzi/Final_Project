@@ -95,9 +95,8 @@ device/tab and **I'm a Player** on others (or other tabs, for local testing).
 
 | Variable          | Required | Default            | Purpose                                                                 |
 |--------------------|:--------:|---------------------|--------------------------------------------------------------------------|
-| `GEMINI_API_KEY`   | No       | —                    | Google Gemini API key. Without it, every verdict silently uses the fallback verdict (a random winner, 0 damages) instead of a real AI ruling |
-| `GEMINI_MODEL`     | No       | `gemini-2.5-flash`   | Overrides which Gemini model is called.                                  |
-| `PORT`             | No       | `5000`               | Port the dev server (or gunicorn, in production) binds to.               |
+| `GEMINI_API_KEY`   | Yes       | —                    | Google Gemini API key |
+| `GEMINI_MODEL`     | No       | `gemini-2.5-flash`   | Overrides which Gemini model is called                                  |
 
 There is no `.env` loading built in; export these in your shell (or set
 them in Railway's environment settings for deployment).
