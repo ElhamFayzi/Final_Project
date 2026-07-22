@@ -33,8 +33,7 @@ LOBBY → CASE_REVEAL → ARGUMENTS → VERDICT → JURY_VOTE → SCOREBOARD ─
 
 - **Backend:** Flask + Flask-SQLAlchemy, SQLite
 - **Frontend:** HTML/CSS/JS: the browser polls the backend every 1.5s for the current game state and re-renders
-- **AI judge:** Google Gemini (`gemini-2.5-flash` by default) via a plain
-  `requests` call
+- **AI judge:** Google Gemini (`gemini-2.5-flash` by default)
 - **Tests:** pytest
 - **Deployment:** Gunicorn behind Railway
 
@@ -96,7 +95,7 @@ device/tab and **I'm a Player** on others (or other tabs, for local testing).
 
 | Variable          | Required | Default            | Purpose                                                                 |
 |--------------------|:--------:|---------------------|--------------------------------------------------------------------------|
-| `GEMINI_API_KEY`   | No       | —                    | Google Gemini API key. Without it, every verdict silently uses the fallback verdict (a random winner, 0 damages) instead of a real AI ruling — the game still works, it's just not funny. |
+| `GEMINI_API_KEY`   | No       | —                    | Google Gemini API key. Without it, every verdict silently uses the fallback verdict (a random winner, 0 damages) instead of a real AI ruling |
 | `GEMINI_MODEL`     | No       | `gemini-2.5-flash`   | Overrides which Gemini model is called.                                  |
 | `PORT`             | No       | `5000`               | Port the dev server (or gunicorn, in production) binds to.               |
 
